@@ -1,0 +1,88 @@
+<?php
+
+namespace {NAMESPACE};
+
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\DB\Ddl\Table;
+use Magento\Framework\Setup\InstallSchemaInterface;
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\SchemaSetupInterface;
+
+/**
+ * Free to modify things
+ */
+class InstallSchema implements InstallSchemaInterface
+{
+    /**
+     * Table name
+     *
+     * @var string
+     */
+    const TABLE_NAME = '';
+
+    /**
+     * Here where your table column structure
+     *
+     * @var array
+     */
+    protected $columns = [];
+
+    public function install(SchemaSetupInterface $setup, ModuleContextInterface $context)
+    {
+        $installer = $setup;
+
+        $installer->startSetup();
+
+        if (! $installer->tableExists(self::TABLE_NAME)) {
+            $installer->getConnection()->createTable(
+                $this->createColumn($installer)
+            );
+            $installer->getConnection()->addIndex(
+                $installer->getTable(self::TABLE_NAME),
+                $setup->getIdxName(
+                    $installer->getTable(self::TABLE_NAME),
+                    $this->getFields(),
+                    AdapterInterface::INDEX_TYPE_FULLTEXT
+                ),
+                $this->getFields(),
+                AdapterInterface::INDEX_TYPE_FULLTEXT
+            );
+        }
+
+        $installer->endSetup();
+    }
+
+    /**
+     * Fields that will be indexed
+     *
+     * @return Array
+     */
+    protected function getFields(): array
+    {
+        return [
+            'path'
+        ];
+    }
+
+    /**
+     * Creates a column to the table
+     *
+     * @param SchemaSetupInterface $installer
+     *
+     * @return Table
+     */
+    protected function createColumn($installer): Table
+    {
+        $installer = $installer
+            ->getConnection()
+            ->newTable(
+                $installer->getTable(self::TABLE_NAME)
+            );
+
+        foreach ($this->columns as $column) {
+            $installer->addColumn(...$column);
+        }
+
+        return $installer;
+    }
+}
