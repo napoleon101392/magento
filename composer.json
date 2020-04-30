@@ -1,6 +1,9 @@
 {
     "name": "napoleon/magento",
     "version": "0.0.1",
+    "require": {
+        "napoleon/magento": "*"
+    },
     "require-dev": {
         "phpunit/phpunit": "~6.5.0"
     },
